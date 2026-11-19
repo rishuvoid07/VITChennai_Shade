@@ -4,7 +4,7 @@
   "python_version": "3.12.10",
   "platform": "Windows-11-10.0.26300-SP0",
   "cpu": "13th Gen Intel(R) Core(TM) i5-13420H",
-  "src_main_sha256": "f91fde66a421eec963c5987ff94e8b94275f376566dde99a4e34cfac2cc2989c",
+  "src_main_sha256": "5d3b133c877a820f20aacd60882ccb50d7d1cbc571cb314086c5894157cad61f",
   "algorithm_summary": "Bounded-drift Mahony complementary filter with gate-controlled tilt correction, stillness-detected initial bias calibration, exponential velocity leak, and slow exponential moving average position restoring.",
   "parameters": {
     "TAU_V": 1.0,

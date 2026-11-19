@@ -620,8 +620,9 @@ def main():
 
     # Detect delimiter and header
     header_mapping = None
-    first_data_line = None
     first_non_empty_line = None
+    header_line = None
+    first_data_line = None
     delim = None
 
     # Read until first non-empty line
@@ -637,58 +638,106 @@ def main():
         if zf_obj: zf_obj.close()
         sys.exit(1)
 
-    delim = detect_delimiter(first_non_empty_line)
     clean_first = first_non_empty_line.strip()
 
-    # Check if header
+    # Determine if first_non_empty_line is a header or data line
     if clean_first.startswith("#"):
-        header_text = clean_first.lstrip("#").strip()
-        cols = split_line(header_text, delim)
+        header_line = clean_first
+        # Scan forward for first non-comment line (the first data line)
+        for raw_line in stream:
+            c = raw_line.strip()
+            if not c or c.startswith("#"):
+                continue
+            first_data_line = raw_line
+            break
+    else:
+        # Check if first token is non-numeric (un-prefixed header)
+        is_num = False
+        for d in (",", ";", "\t", None):
+            parts = clean_first.split() if d is None else [p.strip() for p in clean_first.split(d)]
+            if parts:
+                try:
+                    float(parts[0])
+                    is_num = True
+                    break
+                except ValueError:
+                    pass
+        if not is_num:
+            header_line = clean_first
+            for raw_line in stream:
+                c = raw_line.strip()
+                if not c or c.startswith("#"):
+                    continue
+                first_data_line = raw_line
+                break
+        else:
+            first_data_line = first_non_empty_line
+
+    # Parse header for column-mapping (using header's own delimiter)
+    if header_line is not None:
+        header_text = header_line.lstrip("#").strip()
+        h_delim = detect_delimiter(header_line)
+        cols = split_line(header_text, h_delim)
         if len(cols) >= 7:
             if all(is_gyro_col(cols[i]) for i in (1, 2, 3)) and all(is_accel_col(cols[i]) for i in (4, 5, 6)):
                 header_mapping = "gyro_first"
             elif all(is_accel_col(cols[i]) for i in (1, 2, 3)) and all(is_gyro_col(cols[i]) for i in (4, 5, 6)):
                 header_mapping = "accel_first"
-    else:
-        # Check if first token is non-numeric
-        parts = split_line(clean_first, delim)
-        is_num = False
-        if parts:
-            try:
-                float(parts[0])
-                is_num = True
-            except ValueError:
-                pass
-        if not is_num:
-            if len(parts) >= 7:
-                if all(is_gyro_col(parts[i]) for i in (1, 2, 3)) and all(is_accel_col(parts[i]) for i in (4, 5, 6)):
-                    header_mapping = "gyro_first"
-                elif all(is_accel_col(parts[i]) for i in (1, 2, 3)) and all(is_gyro_col(parts[i]) for i in (4, 5, 6)):
-                    header_mapping = "accel_first"
-        else:
-            first_data_line = first_non_empty_line
 
-    # Buffer first N_AUTO_DETECT_MAX rows
-    buffered_rows = []
-    is_integral_mode = True
-
+    # Decide delimiter from first numeric data line, not header line; use header only if no numeric line exists
     if first_data_line is not None:
-        p = parse_raw_row(first_data_line, delim, None, 5000000, 0.005, True)
-        if p is not None:
-            buffered_rows.append(p)
-            if not p[1]:
-                is_integral_mode = False
+        delim = detect_delimiter(first_data_line)
+    elif header_line is not None:
+        delim = detect_delimiter(header_line)
+    else:
+        delim = None
+
+    # Collect up to N_AUTO_DETECT_MAX raw data lines
+    raw_data_lines = []
+    if first_data_line is not None:
+        raw_data_lines.append(first_data_line)
 
     for raw_line in stream:
         line = raw_line.strip()
         if not line or line.startswith("#"):
             continue
-        p = parse_raw_row(line, delim, buffered_rows[-1][0] if buffered_rows else None, 5000000, 0.005, is_integral_mode)
-        if p is not None:
-            buffered_rows.append(p)
-            if not p[1]:
-                is_integral_mode = False
-            if len(buffered_rows) >= N_AUTO_DETECT_MAX:
+        raw_data_lines.append(raw_line)
+        if len(raw_data_lines) >= N_AUTO_DETECT_MAX:
+            break
+
+    if not raw_data_lines:
+        sys.stderr.write("Error: no data rows found in input.\n")
+        if zf_obj: zf_obj.close()
+        sys.exit(1)
+
+    # Function to parse raw_data_lines with a given delimiter
+    def try_parse_lines(lines, d):
+        rows = []
+        integral_mode = True
+        for l in lines:
+            line_str = l.strip()
+            if not line_str or line_str.startswith("#"):
+                continue
+            p = parse_raw_row(line_str, d, rows[-1][0] if rows else None, 5000000, 0.005, integral_mode)
+            if p is not None:
+                rows.append(p)
+                if not p[1]:
+                    integral_mode = False
+        return rows, integral_mode
+
+    # Parse with chosen delim
+    buffered_rows, is_integral_mode = try_parse_lines(raw_data_lines, delim)
+
+    # If parsing with chosen delimiter yields zero valid rows, retry with other delimiters
+    if not any(r[8] for r in buffered_rows):
+        for trial_d in (",", ";", "\t", None):
+            if trial_d == delim:
+                continue
+            trial_rows, trial_integral = try_parse_lines(raw_data_lines, trial_d)
+            if any(r[8] for r in trial_rows):
+                delim = trial_d
+                buffered_rows = trial_rows
+                is_integral_mode = trial_integral
                 break
 
     if not buffered_rows:

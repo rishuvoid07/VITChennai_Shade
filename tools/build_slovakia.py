@@ -26,7 +26,7 @@ README_SRC = os.path.join(RELEASE_DIR, "README.md")
 DIST_DIR = os.path.join(RELEASE_DIR, "dist")
 ZIP_PATH = os.path.join(DIST_DIR, "Slovakia.zip")
 
-EXPECTED_SHA256 = "f91fde66a421eec963c5987ff94e8b94275f376566dde99a4e34cfac2cc2989c"
+EXPECTED_SHA256 = "5d3b133c877a820f20aacd60882ccb50d7d1cbc571cb314086c5894157cad61f"
 
 
 def sha256_file(path):

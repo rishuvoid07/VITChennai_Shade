@@ -215,6 +215,75 @@ def create_variants(clean_rows, clean_header):
                 f.write(r)
     variants["15. File with NaN/empty/duplicate rows"] = (p15, True)
 
+    # 16. comma data with space-delimited header (accel-first)
+    p16 = os.path.join(TMP_DIR, "var16_space_hdr_accel_comma.csv")
+    with open(p16, "w", encoding="utf-8") as f:
+        f.write("# timestamp ax ay az gx gy gz\n")
+        for ts, ax, ay, az, gx, gy, gz in data:
+            f.write(f"{ts},{ax},{ay},{az},{gx},{gy},{gz}\n")
+    variants["16. Comma data, space header (accel-first)"] = (p16, True)
+
+    # 17. comma data with space-delimited header (gyro-first)
+    p17 = os.path.join(TMP_DIR, "var17_space_hdr_gyro_comma.csv")
+    with open(p17, "w", encoding="utf-8") as f:
+        f.write("# timestamp gx gy gz ax ay az\n")
+        for ts, ax, ay, az, gx, gy, gz in data:
+            f.write(f"{ts},{gx},{gy},{gz},{ax},{ay},{az}\n")
+    variants["17. Comma data, space header (gyro-first)"] = (p17, True)
+
+    # 18. comma data with comma header
+    p18 = os.path.join(TMP_DIR, "var18_comma_hdr_comma_data.csv")
+    with open(p18, "w", encoding="utf-8") as f:
+        f.write("# timestamp,ax,ay,az,gx,gy,gz\n")
+        for ts, ax, ay, az, gx, gy, gz in data:
+            f.write(f"{ts},{ax},{ay},{az},{gx},{gy},{gz}\n")
+    variants["18. Comma data, comma header"] = (p18, True)
+
+    # 19. mixed commas and spaces header (EuRoC header)
+    p19 = os.path.join(TMP_DIR, "var19_euroc_mixed_hdr.csv")
+    with open(p19, "w", encoding="utf-8") as f:
+        f.write("#timestamp [ns], w_RS_S_x [rad s^-1], w_RS_S_y [rad s^-1], w_RS_S_z [rad s^-1], a_RS_S_x [m s^-2], a_RS_S_y [m s^-2], a_RS_S_z [m s^-2]\n")
+        for ts, ax, ay, az, gx, gy, gz in data:
+            f.write(f"{ts},{gx},{gy},{gz},{ax},{ay},{az}\n")
+    variants["19. Mixed commas/spaces header (EuRoC style)"] = (p19, True)
+
+    # 20. semicolon data with comma header
+    p20 = os.path.join(TMP_DIR, "var20_comma_hdr_semicolon_data.csv")
+    with open(p20, "w", encoding="utf-8") as f:
+        f.write("# timestamp,ax,ay,az,gx,gy,gz\n")
+        for ts, ax, ay, az, gx, gy, gz in data:
+            f.write(f"{ts};{ax};{ay};{az};{gx};{gy};{gz}\n")
+    variants["20. Semicolon data, comma header"] = (p20, True)
+
+    # 21. tab data with space header
+    p21 = os.path.join(TMP_DIR, "var21_space_hdr_tab_data.csv")
+    with open(p21, "w", encoding="utf-8") as f:
+        f.write("# timestamp ax ay az gx gy gz\n")
+        for ts, ax, ay, az, gx, gy, gz in data:
+            f.write(f"{ts}\t{ax}\t{ay}\t{az}\t{gx}\t{gy}\t{gz}\n")
+    variants["21. Tab data, space header"] = (p21, True)
+
+    # 22. semicolon data headerless
+    p22 = os.path.join(TMP_DIR, "var22_semicolon_headerless.csv")
+    with open(p22, "w", encoding="utf-8") as f:
+        for ts, ax, ay, az, gx, gy, gz in data:
+            f.write(f"{ts};{ax};{ay};{az};{gx};{gy};{gz}\n")
+    variants["22. Semicolon data, headerless"] = (p22, True)
+
+    # 23. tab data headerless
+    p23 = os.path.join(TMP_DIR, "var23_tab_headerless.csv")
+    with open(p23, "w", encoding="utf-8") as f:
+        for ts, ax, ay, az, gx, gy, gz in data:
+            f.write(f"{ts}\t{ax}\t{ay}\t{az}\t{gx}\t{gy}\t{gz}\n")
+    variants["23. Tab data, headerless"] = (p23, True)
+
+    # 24. gyro-first data headerless
+    p24 = os.path.join(TMP_DIR, "var24_gyro_first_headerless.csv")
+    with open(p24, "w", encoding="utf-8") as f:
+        for ts, ax, ay, az, gx, gy, gz in data:
+            f.write(f"{ts},{gx},{gy},{gz},{ax},{ay},{az}\n")
+    variants["24. Gyro-first data, headerless"] = (p24, True)
+
     return variants
 
 
@@ -292,7 +361,7 @@ def main():
 
     all_passed = all(r["overall"] == "PASS" for r in results)
     if all_passed:
-        print("\nALL 15 FORMAT ROBUSTNESS TESTS PASSED (100% SUCCESS).\n")
+        print(f"\nALL {len(results)} FORMAT ROBUSTNESS TESTS PASSED (100% SUCCESS).\n")
     else:
         print("\nSOME TESTS FAILED. Check details above.\n")
 
