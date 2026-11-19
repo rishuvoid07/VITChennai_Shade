@@ -1,0 +1,2 @@
+# src/main.py uses only the Python standard library (io, math, os, sys, zipfile).
+# No third-party runtime dependencies.

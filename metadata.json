@@ -1,0 +1,93 @@
+{
+  "project": "Samsung PRISM XR Hackathon - Track 3 (Path Finder)",
+  "language": "Python",
+  "python_version": "3.12.10",
+  "platform": "Windows-11-10.0.26300-SP0",
+  "cpu": "13th Gen Intel(R) Core(TM) i5-13420H",
+  "src_main_sha256": "f91fde66a421eec963c5987ff94e8b94275f376566dde99a4e34cfac2cc2989c",
+  "algorithm_summary": "Bounded-drift Mahony complementary filter with gate-controlled tilt correction, stillness-detected initial bias calibration, exponential velocity leak, and slow exponential moving average position restoring.",
+  "parameters": {
+    "TAU_V": 1.0,
+    "KP": 8.0,
+    "KI": 0.02,
+    "KP_BOOST": 10.0,
+    "GATE": 3.0,
+    "TAU_P": 40.0,
+    "COAST_MODE": "M1",
+    "TAU_C": "inf",
+    "USE_ZUPT": true
+  },
+  "performance": {
+    "MH_01_full_degraded_csv": {
+      "dataset_duration_seconds": 184.095,
+      "heap_peak_mb_tracemalloc": 1.161,
+      "in_process_ms_per_s_median5": 7.213,
+      "cli_ms_per_s_median5": 2.378,
+      "cli_peak_rss_mb": 17.738,
+      "heap_budget_status": "PASS",
+      "speed_budget_status": "PASS"
+    },
+    "MH_01_full_degraded_zip": {
+      "dataset_duration_seconds": 184.095,
+      "heap_peak_mb_tracemalloc": 1.217,
+      "in_process_ms_per_s_median5": 8.269,
+      "cli_ms_per_s_median5": 2.466,
+      "cli_peak_rss_mb": 17.945,
+      "heap_budget_status": "PASS",
+      "speed_budget_status": "PASS"
+    },
+    "V1_01_full_degraded_csv": {
+      "dataset_duration_seconds": 145.595,
+      "heap_peak_mb_tracemalloc": 1.161,
+      "in_process_ms_per_s_median5": 6.909,
+      "cli_ms_per_s_median5": 2.413,
+      "cli_peak_rss_mb": 17.879,
+      "heap_budget_status": "PASS",
+      "speed_budget_status": "PASS"
+    },
+    "V1_01_full_degraded_zip": {
+      "dataset_duration_seconds": 145.595,
+      "heap_peak_mb_tracemalloc": 1.217,
+      "in_process_ms_per_s_median5": 7.723,
+      "cli_ms_per_s_median5": 2.602,
+      "cli_peak_rss_mb": 18.066,
+      "heap_budget_status": "PASS",
+      "speed_budget_status": "PASS"
+    },
+    "21_minute_flight_csv": {
+      "dataset_duration_seconds": 1288.695,
+      "heap_peak_mb_tracemalloc": 1.161,
+      "in_process_ms_per_s_median5": 7.947,
+      "cli_ms_per_s_median5": 2.09,
+      "cli_peak_rss_mb": 17.887,
+      "heap_budget_status": "PASS",
+      "speed_budget_status": "PASS"
+    },
+    "21_minute_flight_zip": {
+      "dataset_duration_seconds": 1288.695,
+      "heap_peak_mb_tracemalloc": 1.219,
+      "in_process_ms_per_s_median5": 8.659,
+      "cli_ms_per_s_median5": 3.014,
+      "cli_peak_rss_mb": 18.277,
+      "heap_budget_status": "PASS",
+      "speed_budget_status": "PASS"
+    }
+  },
+  "timing_primary": "cli_ms_per_s_median5",
+  "notes": {
+    "cli_peak_rss_mb": "Includes the Python interpreter and runtime libraries; this is NOT the algorithm heap. The algorithm heap is heap_peak_mb_tracemalloc.",
+    "in_process_timing": "In-process repeated-run timing is higher than CLI on the test laptop. The first in-process run was 2.09 ms per 1 s, matching the CLI rate; later repeated runs in the same process were 4-8 ms per 1 s. Cause not verified."
+  },
+  "input_formats_accepted": [
+    "CSV (standard 7-column: timestamp, ax, ay, az, gx, gy, gz)",
+    "Raw EuRoC CSV (imu0/data.csv: ts, wx, wy, wz, ax, ay, az with #ns header)",
+    "ZIP archive (streaming imu0/data.csv or first CSV in-memory with zero disk extraction)",
+    "Directory path (locating imu0/data.csv or first CSV)",
+    "Delimiters: comma, semicolon, tab, whitespace",
+    "Timestamps: integer or float nanoseconds, microseconds, milliseconds, seconds",
+    "Acceleration units: m/s^2 (nominal norm in [7, 12]), g (nominal norm in [0.7, 1.3], auto-scaled by 9.80665)",
+    "Robustness: NaN/empty/duplicate rows repeat or coast without crashing"
+  ],
+  "output_format": "TUM trajectory (timestamp tx ty tz qx qy qz qw, seconds formatted with 9 decimal digits)",
+  "timestamp_generated_utc": "2026-11-19T06:23:28.340935+00:00"
+}

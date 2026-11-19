@@ -1,0 +1,29 @@
+# Development Log: Samsung PRISM XR Hackathon (Track 3: Path Finder)
+
+- **Stage 1 (Synthetic Exploration)**:
+  - Finding: Naive pure double integration of IMU measurements accumulates unbounded $O(t^{3/2})$ position drift exceeding 100 m within 60 seconds.
+  - Decision: Adopt a complementary filtering architecture combining accelerometer tilt correction, gyro bias tracking, and velocity damping.
+- **Stage 2A (Real EuRoC Baseline & Degradation Suite)**:
+  - Finding: Real MAV flight is already in motion at startup (speed 0.801 m/s at $t=+1.08$ s), causing naive static gyro averaging to inject $-6^\circ$/s pitch bias and 50 km divergence.
+  - Decision: Develop automated converters (`euroc_to_7col.py`) and degradation suites creating standardized clean, half-degraded, and full-degraded benchmark datasets.
+- **Stage 3A (Bounded-Drift Estimator & Systematic Ablation)**:
+  - Finding: Mahony filter with 0.5s stillness validation, acceleration gating ($|\|a\| - 9.81| < 3.0\text{ m/s}^2$), and velocity leaky integrator ($\tau_v = 2.0$ s) cuts ATE from $\approx 50,000$ m to $5.95$ m.
+  - Decision: Deploy pure Python Mahony filter with exponential velocity leak, dynamic leveling, and an $O(1)$ rolling stillness detector.
+- **Stage 3B-1 (Sanity Baselines, Robust Tuning & Blind Modes)**:
+  - Finding: Stage 3A estimator failed to beat constant-pose null $N_1$ ($4.31$ m ATE) on full sequence; parameter sweep showed $\tau_v=1.0$ s, $K_p=8.0\text{ s}^{-1}$, $\text{GATE}=3.0\text{ m/s}^2$ cuts 60s ATE to $2.16$ m and full ATE to $3.63$ m, beating $N_1$.
+  - Decision: Promote $\tau_v=1.0$ s, $K_p=8.0\text{ s}^{-1}$, $\text{GATE}=3.0\text{ m/s}^2$, and decaying velocity coasting mode M1 to estimator defaults.
+- **Stage 3B-2 (Input & Degradation Robustness)**:
+  - Finding: Option B (coasting $\ge 3$ consecutive stuck rows) achieves lower 60s ATE ($2.1910$ m) than Option A ($2.1921$ m); nominal-$dt$ gap sub-stepping and dynamics-tuned spike rejection ($|a|>5g, |\omega|>35\text{ rad/s}$) eliminate corruption.
+  - Decision: Implement multi-format streaming CLI supporting zip/directory inputs, lossless integer timestamps, and automated 15-variant robustness test suite (15/15 passed).
+- **Stage 3C-1 (Second Sequence Validation & Diagnostics)**:
+  - Finding: On EuRoC `V1_01_easy`, stillness check safely detects startup motion ($\max |\omega - \bar{\omega}| = 0.195\text{ rad/s}$) and estimator beats $N_1$ across 100% of clean 30s ($1.11$ m vs $1.49$ m) and 60s ($1.39$ m vs $1.77$ m) windows; ZUPT test confirmed bias convergence to $< 10^{-5}$ rad/s with zero velocity drift.
+  - Decision: Maintain filter parameters unchanged and confirm estimator generalizes to new flight environments without sequence-specific retuning.
+- **Stage 3C-2 (Diagnostics, Conventions & Restoring Experiment)**:
+  - Finding: Intrinsic sensor bias exhibits unobservable $+4.5^\circ$/s $gz$ bias; testing exponential moving average position restoring (`TAU_P`) bounds room-scale drift on V1_01 ($1.7999$ m vs $1.8530$ m on full run with $\tau_p=10$ s).
+  - Decision: Verify Hamilton quaternion conventions ($R_{\text{est}} \bar{a}_{\text{body}} = [0, 0, +\|a\|]$), document heading drift rate ($-1.81^\circ$/s MH_01, $+1.31^\circ$/s V1_01), and prepare $\tau_p$ for freeze.
+- **Stage 4 (Freeze & Release Packaging)**:
+  - Finding: Setting `DEFAULT_TAU_P = 40.0` s reduces full-run ATE on V1_01 full-degraded from $3.29$ m to $2.11$ m ($-35.8\%$) while beating $N_1$ on all MH_01 horizons and all windowed V1_01 horizons, passing heap ($0.039$ MB) and runtime ($4.54$ ms/s) limits.
+  - Decision: Freeze `DEFAULT_TAU_P = 40.0`, package release repository at `C:\pathfinder_release` with standalone `src/main.py`, and verify 100% fresh-copy reproducibility.
+- **Stage 5 (Measurement Reconciliation & Final Cleanup)**:
+  - Finding: Tracemalloc across subprocesses only measures parent CLI wrapper ($0.039$ MB), whereas in-process measurement captures true Python heap peak ($2.656$ MB $\le 8.0$ MB); 21.5-minute long-file test confirmed heap remains strictly flat ($1.107$ MB) with linear scaling ($3.725$ ms/s).
+  - Decision: Standardize dual-metric reporting in `metadata.json` and `tools/measure.py`, sanitize external URLs, archive legacy reports, and verify byte-identical hash.

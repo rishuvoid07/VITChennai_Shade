@@ -1,0 +1,22 @@
+# Data directories and archives
+data/
+*.zip
+local archives/
+
+# Keep the submission zip and sample trajectory at repo root
+!Slovakia.zip
+!estimated_trajectory.txt
+
+# Python cache and byte-compiled files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Trajectory and test outputs
+tests/test_variants_tmp/
+tmp_*.txt
+*.log
+
+# Build output (keep dist/ files out of tree; root-level copies are committed)
+dist/
+
