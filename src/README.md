@@ -2,6 +2,10 @@
 
 # 
 
+# Demo video (2-3 min): https://youtu.be/UeS-C6DfX-I
+
+# 
+
 # Samsung PRISM XR Hackathon 2026, Track 3. Rishabh Jain, VIT Chennai.
 
 # 
