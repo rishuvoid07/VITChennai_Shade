@@ -1,4 +1,4 @@
-# \# Slovakia — Path Finder: IMU Trajectory Estimation Under Sensor Degradation
+# \# Shade — Path Finder: IMU Trajectory Estimation Under Sensor Degradation
 
 # 
 
@@ -10,7 +10,7 @@
 
 # 
 
-# Slovakia.zip contains the minimal evaluation bundle. tools/, tests/, docs/ and presentation/ are in the GitHub repository.
+# Shade.zip contains the minimal evaluation bundle. tools/, tests/, docs/ and presentation/ are in the GitHub repository.
 
 # 
 

@@ -4,7 +4,7 @@ data/
 local archives/
 
 # Keep the submission zip and sample trajectory at repo root
-!Slovakia.zip
+!Shade.zip
 !estimated_trajectory.txt
 
 # Python cache and byte-compiled files
